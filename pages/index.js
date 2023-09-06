@@ -63,6 +63,7 @@ const getRandomCell = () => ({
   y: Math.floor(Math.random() * Config.width),
 });
 
+
 const Snake = () => {
   const getDefaultSnake = () => [
     { x: 8, y: 12 },
@@ -72,11 +73,25 @@ const Snake = () => {
   const grid = useRef();
 
   // snake[0] is head and snake[snake.length - 1] is tail
+
+  // useState hook is initialized by getDefaultSnake
+  // returns 2 parameters : current state of snake
+  // and function to set state of snake
   const [snake, setSnake] = useState(getDefaultSnake());
+
+  // useState hook initialized by right direction
+  // (game always starts by moving the snake rightwards)
+  // returns current direction and setter function to set direction
   const [direction, setDirection] = useState(Direction.Right);
 
   const [food, setFood] = useState({ x: 4, y: 10 });
+  const [foodItem, setFoodItem] = useState([]);
+
   const [score, setScore] = useState(0);
+
+
+  // stores last direction to handle right-angled navigation 
+  var lastDirection = "ArrowRight";
 
   // move the snake
   useEffect(() => {
@@ -102,13 +117,25 @@ const Snake = () => {
     return () => clearInterval(timer);
   }, [direction, food]);
 
-  // update score whenever head touches a food
+  // update score and increase length whenever head touches a food
   useEffect(() => {
     const head = snake[0];
+    // if snake head touces food 
     if (isFood(head)) {
       setScore((score) => {
         return score + 1;
       });
+
+      // increase the length of snake by 1
+      setSnake((snake) => {
+        const tail = snake[snake.length - 1];
+        const newTail = { x: tail.x + direction.x, y: tail.y + direction.y };
+
+        // make a new snake by expanding tail
+        const newSnake = [newTail, ...snake];
+
+        return newSnake;
+      })
 
       let newFood = getRandomCell();
       while (isSnake(newFood)) {
@@ -117,27 +144,50 @@ const Snake = () => {
 
       setFood(newFood);
     }
+
   }, [snake]);
+
+  // bring new food after every 3 seconds and keep each for 10 seconds
+  useEffect(() => {
+    const timer = setInterval(() => {
+      let newFood = getRandomCell();
+      setFoodItem((prevFoodItem) => {
+        return [...prevFoodItem, newFood]
+      })
+    }, 3000);
+    return () => clearInterval(timer);
+  }, [])
 
   useEffect(() => {
     const handleNavigation = (event) => {
+      //console.log(lastDirection);
       switch (event.key) {
         case "ArrowUp":
-          setDirection(Direction.Top);
+          if (lastDirection != "ArrowBottom") {
+            setDirection(Direction.Top);
+          }
           break;
 
         case "ArrowDown":
-          setDirection(Direction.Bottom);
+          if (lastDirection != "ArrowUp") {
+            setDirection(Direction.Bottom);
+          }
           break;
 
         case "ArrowLeft":
-          setDirection(Direction.Left);
+          if (lastDirection != "ArrowRight") {
+            setDirection(Direction.Left);
+          }
           break;
 
         case "ArrowRight":
-          setDirection(Direction.Right);
+          if (lastDirection != "ArrowLeft") {
+            setDirection(Direction.Right);
+          }
           break;
       }
+      // update last Direction
+      lastDirection = event.key;
     };
     window.addEventListener("keydown", handleNavigation);
 
