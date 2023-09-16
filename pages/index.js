@@ -83,11 +83,12 @@ const Snake = () => {
     const runSingleStep = () => {
       setSnake((snake) => {
         const head = snake[0];
-        const newHead = { x: head.x + direction.x, y: head.y + direction.y };
+        const newHead = { x: (head.x + direction.x+25)%25, y: (head.y + direction.y+19)%19 };
 
         // make a new snake by extending head
         // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Spread_syntax
         const newSnake = [newHead, ...snake];
+        
 
         // remove tail
         newSnake.pop();
@@ -111,33 +112,60 @@ const Snake = () => {
       });
 
       let newFood = getRandomCell();
+      newFood.x %= 25;
+      newFood.y %= 19;
+      const updateSnake = [...snake, newFood];
+      setSnake(updateSnake)
+      console.log(updateSnake)
       while (isSnake(newFood)) {
         newFood = getRandomCell();
+        console.log('Hello')
       }
-
       setFood(newFood);
     }
   }, [snake]);
 
   useEffect(() => {
+    let u = 1,
+      d = 1,
+      l = 1,
+      r = 1;
     const handleNavigation = (event) => {
-      switch (event.key) {
-        case "ArrowUp":
-          setDirection(Direction.Top);
-          break;
+      // switch (event.key) {
+      //   case "ArrowUp":
+      //     setDirection(Direction.Top);
+      //     break;
 
-        case "ArrowDown":
-          setDirection(Direction.Bottom);
-          break;
+      //   case "ArrowDown":
+      //     setDirection(Direction.Bottom);
+      //     break;
 
-        case "ArrowLeft":
-          setDirection(Direction.Left);
-          break;
+      //   case "ArrowLeft":
+      //     setDirection(Direction.Left);
+      //     break;
 
-        case "ArrowRight":
-          setDirection(Direction.Right);
-          break;
+      //   case "ArrowRight":
+      //     setDirection(Direction.Right);
+      //     break;
+      // }
+
+      if (event.key == "ArrowUp" && d) {
+        d = 0,u=0,l=1,r=1;
+        setDirection(Direction.Top);
       }
+      else if (event.key == "ArrowDown" && u) {
+        u = 0,d=0,l = 1, r = 1;
+        setDirection(Direction.Bottom);
+      }
+      else if (event.key == "ArrowLeft" && r) {
+        r = 0,l=0,u = 1, d = 1;
+        setDirection(Direction.Left);
+      }
+      else if (event.key == "ArrowRight" && l) {
+        l = 0,r=0,u = 1, d = 1;
+        setDirection(Direction.Right);
+      }
+
     };
     window.addEventListener("keydown", handleNavigation);
 
