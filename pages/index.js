@@ -3,9 +3,9 @@ import { useEffect, useState, useRef } from "react";
 import styles from "../styles/Snake.module.css";
 
 const Config = {
-  height: 25,
+  height: 20,
   width: 25,
-  cellSize: 32,
+  cellSize: 30,
 };
 
 const CellType = {
@@ -75,7 +75,7 @@ const Snake = () => {
   const [snake, setSnake] = useState(getDefaultSnake());
   const [direction, setDirection] = useState(Direction.Right);
 
-  const [food, setFood] = useState({ x: 4, y: 10 });
+const [food, setFood] = useState([{ x: 4, y: 10 }]);
   const [score, setScore] = useState(0);
 
   // move the snake
@@ -83,12 +83,11 @@ const Snake = () => {
     const runSingleStep = () => {
       setSnake((snake) => {
         const head = snake[0];
-        const newHead = { x: (head.x + direction.x+25)%25, y: (head.y + direction.y+19)%19 };
+        const newHead = { x: (head.x + direction.x+25)%25, y: (head.y + direction.y+20)%20 };
 
         // make a new snake by extending head
         // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Spread_syntax
         const newSnake = [newHead, ...snake];
-        
 
         // remove tail
         newSnake.pop();
@@ -96,34 +95,56 @@ const Snake = () => {
         return newSnake;
       });
     };
-
+   
     runSingleStep();
     const timer = setInterval(runSingleStep, 500);
 
     return () => clearInterval(timer);
   }, [direction, food]);
 
-  // update score whenever head touches a food
-  useEffect(() => {
-    const head = snake[0];
-    if (isFood(head)) {
-      setScore((score) => {
-        return score + 1;
-      });
+  let first = snake[0];
+  for (let i = 1; i < snake.length; i++) {
+     if (first.x == snake[i].x && first.y == snake[i].y) {
+       alert(`Game Over \nYour score ${score}`);
+       location.reload();
+     }
+  }
 
-      let newFood = getRandomCell();
-      newFood.x %= 25;
-      newFood.y %= 19;
-      const updateSnake = [...snake, newFood];
-      setSnake(updateSnake)
-      console.log(updateSnake)
-      while (isSnake(newFood)) {
-        newFood = getRandomCell();
-        console.log('Hello')
-      }
-      setFood(newFood);
-    }
-  }, [snake]);
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      let allFoods = getRandomCell();
+      allFoods.x %= 25;
+      allFoods.y %= 20;
+      const updateFood = [allFoods];
+      setFood(updateFood);
+      console.log(allFoods);
+      setFood(allFoods);
+    }, 10000); // 3000 milliseconds = 3 seconds
+
+    return () => clearTimeout(timer);
+  }, [score]);
+
+  // update score whenever head touches a food
+   useEffect(() => {
+     const head = snake[0];
+     let newFood = getRandomCell();
+     if (isFood(head)) {
+       setScore((score) => {
+         return score + 1;
+       });
+       newFood.x %= 25;
+       newFood.y %= 20;
+       const updateSnake = [...snake, newFood];
+       setSnake(updateSnake);
+       while (isSnake(newFood)) {
+         newFood = getRandomCell();
+         console.log("Hello");
+       }
+       setFood(newFood);
+     }
+   }, [snake]);
+
+
 
   useEffect(() => {
     let u = 1,
