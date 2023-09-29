@@ -238,15 +238,17 @@ const Snake = () => {
     window.addEventListener("keydown", handleNavigation);
 
     return () => window.removeEventListener("keydown", handleNavigation);
-  }, [snake]);
+  }, [direction]);
 
   // ?. is called optional chaining
   // see: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Optional_chaining
-  const isFood = ({ x, y }) => {for(let i=0;i<food.length;i++) {
-    //food[i]?.x === x && food[i]?.y === y;
-    if(food[i]?.x === x && food[i]?.y === y)
-    return true;
-  }}
+  const isFood = ({ x, y }) => {
+    for(let i=0;i<food.length;i++) {
+      if(food[i]?.x === x && food[i]?.y === y)
+            return true;
+      }
+  return false;
+}
 
   const isSnake = ({ x, y }) =>
     snake.find((position) => position.x === x && position.y === y);
