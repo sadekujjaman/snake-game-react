@@ -69,16 +69,32 @@ const Snake = () => {
     { x: 7, y: 12 },
     { x: 6, y: 12 },
   ];
-  const grid = useRef();
+  //const grid = useRef();
 
   // snake[0] is head and snake[snake.length - 1] is tail
   const [snake, setSnake] = useState(getDefaultSnake());
   const [direction, setDirection] = useState(Direction.Right);
 
-  const [food, setFood] = useState([{ x: 4, y: 10 }]);
+  const [food, setFood] = useState([]);
   const [score, setScore] = useState(0);
 
+  const grid={
+    length:24,
+    width:24,
+  }
 
+
+  const updateHead=(head)=>{
+    
+    return {x: (head.x + direction.x + Config.width) % Config.width,y:(head.y + direction.y + Config.height) % Config.height};
+
+  }
+
+
+function isCollide(snakeBody,newHead)
+{
+  return snakeBody.x===newHead.x && snakeBody.y===newHead.y;
+}
 
   // move the snake
   useEffect(() => {
@@ -86,50 +102,28 @@ const Snake = () => {
 
       setSnake((snake) => {
         const head = snake[0];
-        let newHead;
-        if(head.x===24 && direction===Direction.Right)
-        {
-           newHead = {x: 0, y: head.y + direction.y };
-        }
-        else if(head.x===0 && direction===Direction.Left)
-        {
-           newHead = {x: 24, y: head.y + direction.y };
-        }
-        else if(head.y===0 && direction===Direction.Top)
-        {
-           newHead = {x: head.x + direction.x, y: 24};
-        }
-        else if(head.y===24 && direction===Direction.Bottom)
-        {
-           newHead = {x: head.x + direction.x, y: 0};
-        }
-        else{
-          newHead = {x: head.x + direction.x, y: head.y + direction.y };
-        }
+        let newHead=updateHead(head);
         let newSnake;
-        let k=0;
+        let isTouchItself=false;
 
-        for(let i of snake)
+        //check the head touch the body or not
+        const newHeadCollideWithBody=snake.some((segment)=> isCollide(segment,newHead));
+
+        if(newHeadCollideWithBody)
         {
-          if(i.x===newHead.x && i.y===newHead.y)
-          {
-           newSnake=getDefaultSnake();
+          newSnake=getDefaultSnake();
           setDirection(Direction.Right);
           setScore(0);
           //food=[{x:3,y:4}]
           setFood([{x:1,y:3}])
-           k=1;
-           break;
-          }
-         
+          isTouchItself=true;
         }
-        
        
-        //snake.push(newHead);
+   
   
         // make a new snake by extending head
         // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Spread_syntax
-        if(k===0){
+        if(isTouchItself===false){
         newSnake = [newHead, ...snake];
 
         // remove tail
@@ -148,31 +142,34 @@ const Snake = () => {
     runSingleStep();
  
    
-    const timer = setInterval(runSingleStep, 300);
+    const timer = setInterval(runSingleStep, 500);
  
 
     return () => clearInterval(timer);
 
   }, [direction]);
 
+
+
   // update score whenever head touches a food
   useEffect(() => {
     
     const head = snake[0];
+
     if (isFood(head)) {
       setScore((score) => {
         return score + 1;
       });
 
-      let newFood = getRandomCell();
-    
-      while (isSnake(newFood)) {
-        newFood = getRandomCell();
-     
+      function isMatchingPosition(element) {
+        return element.x === head.x && element.y === head.y;
       }
-      
-     // setFood(newFood);
-      const index=food.findIndex(i=>i.x===head.x && i.y===head.y);
+    
+
+ 
+      //const index=food.findIndex(i=>i.x===head.x && i.y===head.y);
+
+     const index = food.findIndex(isMatchingPosition);
       //food.pop(0);
      // food.push(newFood);
      food.splice(index,1);
@@ -183,32 +180,49 @@ const Snake = () => {
   }, [snake,food]);
 
   useEffect(()=>{
-    function AddFood3sec()
-    {
-      food.push(getRandomCell());
-    }
-    
-    const interval= setInterval(AddFood3sec,3000);
+ 
+    const interval= setInterval(()=>{
+      const newFoodItem={
+        id: Date.now(), // Assign a unique id to each food item
+        x: Math.floor(Math.random() * Config.width),
+        y: Math.floor(Math.random() * Config.height),
+       };
+       console.log(newFoodItem);
+      
+     // setFood([...food,newFoodItem]);
+     setFood((prevFood) => [...prevFood, newFoodItem]);
+    },3000);
         
     return () =>{
       clearInterval(interval);
     }
   },[food])
 
-  useEffect(()=>{
 
-      function RemoveFood10s()
+
+
+  useEffect(() => {
+    const removeExpiredFood = () => {
+      const currentTime = Date.now();
+      for(let i=0;i<food.length;i++)
       {
-        food.splice(0,1);
+          console.log('time differnec');
+          console.log(currentTime-food[i].id);
+         if((currentTime-food[i].id) >10000)
+         {
+          food.splice(i,1);
+          console.log(food[i]);
+         }
       }
-      const intvl=setInterval(RemoveFood10s,10000);
-   
-
+    };
+      
+    const intvl = setInterval(removeExpiredFood, 1000);
+  
     return () => {
       clearInterval(intvl);
-    }
-  }
-  ,[food])
+    };
+  }, [food]);
+  
 
 
   useEffect(() => {
