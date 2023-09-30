@@ -160,13 +160,13 @@ test("Exercise 3.1: given a person, return average age of her subordinates", () 
 // e.g: if someone has 4 female subordinates and 7 male subordinates, return -3(=4-7)
 const exercise32 = (person) => {
     let subs = person.subordinates;
-    let cnt1 = 0;
-    let cnt2 = 0;
+    let maleCount = 0;
+    let femaleCount = 0;
     for (let i = 0; i < subs.length; i++) {
-        if (subs[i].gender == "male") cnt1++;
-        else cnt2++;
+        if (subs[i].gender == "male")  maleCount++;
+        else femaleCount++;
     }
-    return cnt2 - cnt1;
+    return femaleCount - maleCount;
 };
 
 test("Exercise 3.2: given a person, return difference between female and male subordinates", () => {
@@ -178,7 +178,7 @@ test("Exercise 3.2: given a person, return difference between female and male su
 const exercise32a = (person) => {
     let subs = person.subordinates;
 
-    const cst = subs.reduce((cnt, p) => {
+    const difference = subs.reduce((cnt, p) => {
 
         if (p.gender === 'male') return cnt - 1;
         else return cnt + 1;
@@ -186,7 +186,7 @@ const exercise32a = (person) => {
 
     }, 0)
 
-    return cst;
+    return difference;
 };
 
 test("Exercise 3.2a: given a person, return difference between female and male subordinates", () => {
@@ -202,12 +202,12 @@ test("Exercise 3.2a: given a person, return difference between female and male s
 
 // implement map function
 const map = (array, func) => {
-    let res = []
+    let result = []
     for (let i = 0; i < array.length; i++) {
-        let tmp = func(array[i]);
-        res.push(tmp)
+        let tempMap = func(array[i]);
+        result.push(tempMap)
     }
-    return res;
+    return result;
 };
 
 test("Exercise 4.1: implement map function", () => {
@@ -220,13 +220,13 @@ test("Exercise 4.1: implement map function", () => {
 
 // implement filter function
 const filter = (array, func) => {
-    let res = []
-    for (let i = 0; i < array.length; i++) {
-        let k = func(array[i])
-        if (k)
-            res.push(array[i])
+    let result = []
+    for (let index = 0; index < array.length; index++) {
+        let resultItem = func(array[index])
+        if (resultItem)
+            result.push(array[index])
     }
-    return res;
+    return result;
 };
 
 test("Exercise 4.2: implement filter function", () => {
@@ -246,13 +246,13 @@ test("Exercise 4.2: implement filter function", () => {
 
 // implement reduce
 const reduce = (array, func, initalValue) => {
-    let k = initalValue;
+
 
     for (let i = 0; i < array.length; i++) {
-        k = func(k, array[i])
+        initalValue = func(initalValue, array[i])
     }
 
-    return k;
+    return initalValue;
 };
 
 test("Exercise 4.3: implement reduce function", () => {
@@ -349,21 +349,12 @@ const exercise53 = () => {
     let result = []
 
     const NameOfComp = (nam) => {
-        let res = "";
-        for (let i = 0; i < nam.length; i++) {
-            if (nam[i] == '@') {
-                i++;
-                while (nam[i] != '.') {
-                    res += nam[i];
-                    i++;
-                }
-                break;
-            }
-        }
-        return res;
+        let startIndex=nam.indexOf('@');
+        let endIndex=nam.indexOf('.');
+        return nam.substring(startIndex,endIndex);
     }
 
-    Cal = (person) => {
+    const getEmployeesInSameCompanyWithManager = (person) => {
 
         let psubs = person.subordinates;
 
@@ -375,21 +366,23 @@ const exercise53 = () => {
             let Ename = psubs[i].name;
 
             if (managerCom === nameEmp) {
-                let k = ""
+            //     let k = ""
 
-                for (let j = 0; j < Ename.length; j++) {
-                    if (psubs[i].name[j] === ' ') break;
-                    k += psubs[i].name[j];
-                }
-                result.push(k);
+            //     for (let j = 0; j < Ename.length; j++) {
+            //         if (psubs[i].name[j] === ' ') break;
+            //         k += psubs[i].name[j];
+            //   //  }
+                let indexOfFirstname=psubs[i].name.indexOf(' ');
+
+                result.push(psubs[i].name.substring(0,indexOfFirstname));
             }
 
-            Cal(psubs[i]);
+            getEmployeesInSameCompanyWithManager(psubs[i]);
 
         }
 
     }
-    Cal(CruzHarrell);
+   getEmployeesInSameCompanyWithManager(CruzHarrell);
 
     return result;
 };
